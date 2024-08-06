@@ -1,11 +1,9 @@
-using System.Net;
-using System.Net.Http;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Insurance.Api.Controllers
 {
-    public class HomeController: Controller
+    public class HomeController : Controller
     {
         [HttpPost]
         [Route("api/insurance/product")]
@@ -22,15 +20,17 @@ namespace Insurance.Api.Controllers
                 toInsure.InsuranceValue = 0;
             else
             {
-                if (toInsure.SalesPrice > 500 && toInsure.SalesPrice < 2000)
+                if (toInsure.SalesPrice >= 500 && toInsure.SalesPrice < 2000)
                     if (toInsure.ProductTypeHasInsurance)
                         toInsure.InsuranceValue += 1000;
                 if (toInsure.SalesPrice >= 2000)
                     if (toInsure.ProductTypeHasInsurance)
                         toInsure.InsuranceValue += 2000;
-                if (toInsure.ProductTypeName == "Laptops" || toInsure.ProductTypeName == "Smartphones" && toInsure.ProductTypeHasInsurance)
-                    toInsure.InsuranceValue += 500;
             }
+
+            if (toInsure.ProductTypeName == "Laptops" || toInsure.ProductTypeName == "Smartphones" && toInsure.ProductTypeHasInsurance)
+                toInsure.InsuranceValue += 500;
+
 
             return toInsure;
         }
