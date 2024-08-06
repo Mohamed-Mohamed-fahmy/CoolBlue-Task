@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Insurance.Api.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,7 +11,7 @@ using Xunit;
 
 namespace Insurance.Tests
 {
-    public class InsuranceTests: IClassFixture<ControllerTestFixture>
+    public class InsuranceTests : IClassFixture<ControllerTestFixture>
     {
         private readonly ControllerTestFixture _fixture;
 
@@ -20,14 +21,71 @@ namespace Insurance.Tests
         }
 
         [Fact]
+        public void CalculateInsurance_GivenSalesPriceLessThan500AndProductTypeLaptop_ShouldAddFiveHundredEurosToInsuranceCost()
+        {
+            const float expectedInsuranceValue = 500;
+
+            var dto = new HomeController.InsuranceDto
+            {
+                ProductId = 2,
+            };
+            var sut = new HomeController();
+
+            var result = sut.CalculateInsurance(dto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result.InsuranceValue
+            );
+        }
+
+        [Fact]
+        public void CalculateInsurance_GivenSalesPriceLessThan500AndProductTypeNotLaptopOrSmartphone_ShouldNotAddInsuranceCost()
+        {
+            const float expectedInsuranceValue = 0;
+
+            var dto = new HomeController.InsuranceDto
+            {
+                ProductId = 3,
+            };
+            var sut = new HomeController();
+
+            var result = sut.CalculateInsurance(dto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result.InsuranceValue
+            );
+        }
+
+        [Fact]
         public void CalculateInsurance_GivenSalesPriceBetween500And2000Euros_ShouldAddThousandEurosToInsuranceCost()
         {
             const float expectedInsuranceValue = 1000;
 
             var dto = new HomeController.InsuranceDto
-                      {
-                          ProductId = 1,
-                      };
+            {
+                ProductId = 1,
+            };
+            var sut = new HomeController();
+
+            var result = sut.CalculateInsurance(dto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result.InsuranceValue
+            );
+        }
+
+        [Fact]
+        public void CalculateInsurance_GivenSalesPriceMoreThanOrEqual2000Euros_ShouldAddTwoThousandEurosToInsuranceCost()
+        {
+            const float expectedInsuranceValue = 2000;
+
+            var dto = new HomeController.InsuranceDto
+            {
+                ProductId = 4,
+            };
             var sut = new HomeController();
 
             var result = sut.CalculateInsurance(dto);
@@ -39,7 +97,7 @@ namespace Insurance.Tests
         }
     }
 
-    public class ControllerTestFixture: IDisposable
+    public class ControllerTestFixture : IDisposable
     {
         private readonly IHost _host;
 
@@ -70,14 +128,39 @@ namespace Insurance.Tests
                         "products/{id:int}",
                         context =>
                         {
-                            int productId = int.Parse((string) context.Request.RouteValues["id"]);
-                            var product = new
-                                          {
-                                              id = productId,
-                                              name = "Test Product",
-                                              productTypeId = 1,
-                                              salesPrice = 750
-                                          };
+                            int productId = int.Parse((string)context.Request.RouteValues["id"]);
+                            var products = new []
+                            {
+                                new
+                                {
+                                    id = 1,
+                                    name = "Test Product",
+                                    productTypeId = 1,
+                                    salesPrice = 750
+                                },
+                                new
+                                {
+                                    id = 2,
+                                    name = "Test Product 2",
+                                    productTypeId = 2,
+                                    salesPrice = 350
+                                },
+                                new
+                                {
+                                    id = 3,
+                                    name = "Test Product 3",
+                                    productTypeId = 1,
+                                    salesPrice = 250
+                                },
+                                new
+                                {
+                                    id = 4,
+                                    name = "Test Product 4",
+                                    productTypeId = 1,
+                                    salesPrice = 2000
+                                }
+                            };
+                            var product = products.FirstOrDefault(prod => prod.id == productId);
                             return context.Response.WriteAsync(JsonConvert.SerializeObject(product));
                         }
                     );
@@ -91,6 +174,12 @@ namespace Insurance.Tests
                                                    {
                                                        id = 1,
                                                        name = "Test type",
+                                                       canBeInsured = true
+                                                   },
+                                                   new
+                                                   {
+                                                       id = 2,
+                                                       name = "Laptops",
                                                        canBeInsured = true
                                                    }
                                                };
