@@ -40,12 +40,17 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
+            var calculateInsuranceDto = new CalculateInsuranceDto
+            {
+                ProductId = productDto.ProductId
+            };
+
             this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(It.IsAny<int>())).Returns(productDto);
             this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(It.IsAny<int>())).Returns(productTypeDto);
 
             var sut = new InsuranceService(this.businessRulesServiceMock.Object);
 
-            var result = sut.CalculateInsurance(productDto.ProductId);
+            var result = sut.CalculateInsurance(calculateInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -73,12 +78,17 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
+            var calculateInsuranceDto = new CalculateInsuranceDto
+            {
+                ProductId = productDto.ProductId
+            };
+
             this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(productDto.ProductId)).Returns(productDto);
             this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(productDto.ProductTypeId)).Returns(productTypeDto);
 
             var sut = new InsuranceService(this.businessRulesServiceMock.Object);
 
-            var result = sut.CalculateInsurance(productDto.ProductId);
+            var result = sut.CalculateInsurance(calculateInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -106,12 +116,17 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
+            var calculateInsuranceDto = new CalculateInsuranceDto
+            {
+                ProductId = productDto.ProductId
+            };
+
             this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(productDto.ProductId)).Returns(productDto);
             this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(productDto.ProductTypeId)).Returns(productTypeDto);
 
             var sut = new InsuranceService(this.businessRulesServiceMock.Object);
 
-            var result = sut.CalculateInsurance(productDto.ProductId);
+            var result = sut.CalculateInsurance(calculateInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -139,12 +154,17 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
+            var calculateInsuranceDto = new CalculateInsuranceDto
+            {
+                ProductId = productDto.ProductId
+            };
+
             this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(productDto.ProductId)).Returns(productDto);
             this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(productDto.ProductTypeId)).Returns(productTypeDto);
 
             var sut = new InsuranceService(this.businessRulesServiceMock.Object);
 
-            var result = sut.CalculateInsurance(productDto.ProductId);
+            var result = sut.CalculateInsurance(calculateInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
