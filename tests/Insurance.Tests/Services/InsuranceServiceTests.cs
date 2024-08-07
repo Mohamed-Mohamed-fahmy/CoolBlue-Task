@@ -1,13 +1,8 @@
-﻿using Insurance.Api.Controllers;
-using Insurance.Api.Interfaces;
+﻿using Insurance.Api.Interfaces;
 using Insurance.Api.Models;
 using Insurance.Api.Services;
 using Moq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Insurance.Tests.Services
@@ -15,7 +10,7 @@ namespace Insurance.Tests.Services
     public class InsuranceServiceTests
     {
         private readonly Mock<IBusinessRulesService> businessRulesServiceMock;
-        public InsuranceServiceTests() 
+        public InsuranceServiceTests()
         {
             businessRulesServiceMock = new Mock<IBusinessRulesService>();
         }
@@ -165,6 +160,90 @@ namespace Insurance.Tests.Services
             var sut = new InsuranceService(this.businessRulesServiceMock.Object);
 
             var result = sut.CalculateInsurance(calculateInsuranceDto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result
+            );
+        }
+
+        [Fact]
+        public void CalculateOrderInsurance_GivenTwoProductsWithSalesPriceLessThan500AndProductTypeNotLaptopOrSmartphone_ShouldNotAddInsuranceCost()
+        {
+            const float expectedInsuranceValue = 0;
+
+            var productDto = new ProductDto
+            {
+                ProductId = 3,
+                Name = "Test Product 3",
+                ProductTypeId = 1,
+                SalesPrice = 250
+            };
+
+            var productTypeDto = new ProductTypeDto
+            {
+                ProductTypeId = 1,
+                Name = "Test type",
+                CanBeInsured = true
+            };
+
+            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            {
+                ProductIds = new List<int>
+                {
+                    productDto.ProductId,
+                    productDto.ProductId
+                }
+            };
+
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(productDto.ProductId)).Returns(productDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(productDto.ProductTypeId)).Returns(productTypeDto);
+
+            var sut = new InsuranceService(this.businessRulesServiceMock.Object);
+
+            var result = sut.CalculateOrderInsurance(calculateOrderInsuranceDto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result
+            );
+        }
+
+        [Fact]
+        public void CalculateOrderInsurance_GivenTwoProductsWithSalesPriceBetween500And2000Euros_ShouldAddTwoThousandEurosToInsuranceCost()
+        {
+            var productDto = new ProductDto
+            {
+                ProductId = 1,
+                Name = "Test Product",
+                ProductTypeId = 1,
+                SalesPrice = 750
+            };
+
+            var productTypeDto = new ProductTypeDto
+            {
+                ProductTypeId = 1,
+                Name = "Test type",
+                CanBeInsured = true
+            };
+
+            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            {
+                ProductIds = new List<int>{
+                    productDto.ProductId,
+                    productDto.ProductId
+                }
+            };
+
+            float expectedInsuranceValue = 1000 * calculateOrderInsuranceDto.ProductIds.Count;
+
+
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(productDto.ProductId)).Returns(productDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(productDto.ProductTypeId)).Returns(productTypeDto);
+
+            var sut = new InsuranceService(this.businessRulesServiceMock.Object);
+
+            var result = sut.CalculateOrderInsurance(calculateOrderInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,

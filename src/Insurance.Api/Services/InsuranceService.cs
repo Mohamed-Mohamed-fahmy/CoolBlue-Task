@@ -21,6 +21,21 @@ namespace Insurance.Api.Services
             return CalculateProductInsurance(product);
         }
 
+        public float CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto)
+        {
+            float insuranceValue = 0;
+
+            foreach (var productId in calculateOrderInsuranceDto.ProductIds)
+            {
+                var product = this.businessRulesService.GetProductDetails(productId);
+                product.ProductType = this.businessRulesService.GetProductTypeDetails(product.ProductTypeId);
+
+                insuranceValue += CalculateProductInsurance(product);
+            }
+
+            return insuranceValue;
+        }
+
         private float CalculateProductInsurance(ProductDto product)
         {
             float productInsurance = 0;
