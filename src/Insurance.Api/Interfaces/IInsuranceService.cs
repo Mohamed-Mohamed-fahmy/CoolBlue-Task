@@ -5,5 +5,6 @@ namespace Insurance.Api.Interfaces
     public interface IInsuranceService
     {
         float CalculateInsurance(CalculateInsuranceDto calculateInsuranceDto);
+        float CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto);
     }
 }
