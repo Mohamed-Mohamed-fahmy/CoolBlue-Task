@@ -250,5 +250,133 @@ namespace Insurance.Tests.Services
                 actual: result
             );
         }
+
+        [Fact]
+        public void CalculateOrderInsurance_GivenTwoProductsWithSalesPriceBetween500And2000EurosAndOneWithProductTypeDigitalCamera_ShouldAddTwoThousandAndFiveHundredEurosToInsuranceCost()
+        {
+            var productDto = new ProductDto
+            {
+                ProductId = 1,
+                Name = "Test Product",
+                ProductTypeId = 1,
+                SalesPrice = 750
+            };
+            var secondProductDto = new ProductDto
+            {
+                ProductId = 2,
+                Name = "Test Product 2",
+                ProductTypeId = 2,
+                SalesPrice = 750
+            };
+
+            var productTypeDto = new ProductTypeDto
+            {
+                ProductTypeId = 1,
+                Name = "Test type",
+                CanBeInsured = true
+            };
+
+            var secondProductTypeDto = new ProductTypeDto
+            {
+                ProductTypeId = 2,
+                Name = "Digital cameras",
+                CanBeInsured = true
+            };
+
+            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            {
+                ProductIds = new List<int>{
+                    productDto.ProductId,
+                    secondProductDto.ProductId
+                }
+            };
+
+            float digitalCameraInsuranceValue = 500;
+            float expectedInsuranceValue = (1000 * calculateOrderInsuranceDto.ProductIds.Count) + digitalCameraInsuranceValue;
+
+
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(productDto.ProductId)).Returns(productDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(productDto.ProductTypeId)).Returns(productTypeDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(secondProductDto.ProductId)).Returns(secondProductDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(secondProductTypeDto.ProductTypeId)).Returns(secondProductTypeDto);
+
+            var sut = new InsuranceService(this.businessRulesServiceMock.Object);
+
+            var result = sut.CalculateOrderInsurance(calculateOrderInsuranceDto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result
+            );
+        }
+
+        [Fact]
+        public void CalculateOrderInsurance_GivenThreeProductsWithSalesPriceLessThan500AndTwoWithProductTypeDigitalCamera_ShoulAddOnlyFiveHundredEurosToInsuranceCost()
+        {
+            const float expectedInsuranceValue = 500;
+
+            var productDto = new ProductDto
+            {
+                ProductId = 1,
+                Name = "Test Product 1",
+                ProductTypeId = 2,
+                SalesPrice = 250
+            };
+
+            var secondProductDto = new ProductDto
+            {
+                ProductId = 2,
+                Name = "Test Product 2",
+                ProductTypeId = 2,
+                SalesPrice = 250
+            };
+
+            var thirdProductDto = new ProductDto
+            {
+                ProductId = 3,
+                Name = "Test Product 3",
+                ProductTypeId = 1,
+                SalesPrice = 250
+            };
+
+            var productTypeDto = new ProductTypeDto
+            {
+                ProductTypeId = 1,
+                Name = "Test type",
+                CanBeInsured = true
+            };
+
+            var digitalCameraProductTypeDto = new ProductTypeDto
+            {
+                ProductTypeId = 2,
+                Name = "Digital cameras",
+                CanBeInsured = true
+            };
+
+            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            {
+                ProductIds = new List<int>
+                {
+                    productDto.ProductId,
+                    secondProductDto.ProductId,
+                    thirdProductDto.ProductId
+                }
+            };
+
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(productDto.ProductId)).Returns(productDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(productDto.ProductTypeId)).Returns(productTypeDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(secondProductDto.ProductId)).Returns(productDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductTypeDetails(digitalCameraProductTypeDto.ProductTypeId)).Returns(digitalCameraProductTypeDto);
+            this.businessRulesServiceMock.Setup(rules => rules.GetProductDetails(thirdProductDto.ProductId)).Returns(productDto);
+
+            var sut = new InsuranceService(this.businessRulesServiceMock.Object);
+
+            var result = sut.CalculateOrderInsurance(calculateOrderInsuranceDto);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result
+            );
+        }
     }
 }

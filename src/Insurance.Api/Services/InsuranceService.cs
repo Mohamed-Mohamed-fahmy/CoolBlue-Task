@@ -24,13 +24,24 @@ namespace Insurance.Api.Services
         public float CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto)
         {
             float insuranceValue = 0;
+            bool orderHasDigitalCamera = false;
 
             foreach (var productId in calculateOrderInsuranceDto.ProductIds)
             {
                 var product = this.businessRulesService.GetProductDetails(productId);
                 product.ProductType = this.businessRulesService.GetProductTypeDetails(product.ProductTypeId);
 
+                if (!orderHasDigitalCamera)
+                {
+                    orderHasDigitalCamera = product.ProductType.Name.Equals("Digital cameras", System.StringComparison.OrdinalIgnoreCase);
+                }
+
                 insuranceValue += CalculateProductInsurance(product);
+            }
+
+            if (orderHasDigitalCamera)
+            {
+                insuranceValue += 500;
             }
 
             return insuranceValue;
