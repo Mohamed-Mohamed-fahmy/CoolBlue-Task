@@ -25,26 +25,27 @@ namespace Insurance.Api.Middlewares
             {
                 await this.next(context);
             }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                await Problem(context, ex, HttpStatusCode.Conflict);
+            }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, ex?.Message);
-
-                var response = context.Response;
-                response.ContentType = "application/json";
-
-                switch (ex)
-                {
-                    case DbUpdateConcurrencyException e:
-                        response.StatusCode = (int)HttpStatusCode.Conflict;
-                        break;
-                    default:
-                        response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                        break;
-                }
-
-                var result = JsonSerializer.Serialize(new { message = ex?.Message });
-                await response.WriteAsync(result);
+                await Problem(context, ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        private async Task Problem(HttpContext context, Exception ex, HttpStatusCode code)
+        {
+            this.logger.LogError(ex, ex?.Message);
+
+            var response = context.Response;
+            response.ContentType = "application/json";
+
+            response.StatusCode = (int)code;
+
+            var result = JsonSerializer.Serialize(new { message = ex?.Message });
+            await response.WriteAsync(result);
         }
     }
 }

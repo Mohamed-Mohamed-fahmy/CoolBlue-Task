@@ -2,7 +2,7 @@
 
 namespace Insurance.Api.DTOs
 {
-    public class CalculateOrderInsuranceDto
+    public class OrderInsuranceDto
     {
         public List<int> ProductIds { get; set; }
     }

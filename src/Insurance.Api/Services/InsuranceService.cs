@@ -1,6 +1,7 @@
 ﻿using Insurance.Api.Interfaces;
 using Insurance.Api.DTOs;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Insurance.Api.Services
 {
@@ -8,32 +9,37 @@ namespace Insurance.Api.Services
     {
         private readonly IProductDataService productDataService;
         private readonly ISurchargeService surchargeService;
+        private readonly ILogger<InsuranceService> logger;
 
-        public InsuranceService(IProductDataService productDataService, ISurchargeService surchargeService)
+        public InsuranceService(IProductDataService productDataService, ISurchargeService surchargeService, ILogger<InsuranceService> logger)
         {
             this.productDataService = productDataService;
             this.surchargeService = surchargeService;
+            this.logger = logger;
         }
 
-        public async Task<float> CalculateInsurance(CalculateInsuranceDto calculateInsuranceDto)
+        public async Task<float> CalculateInsurance(ProductInsuranceDto productInsuranceDto)
         {
-            var product = await this.productDataService.GetProductDetails(calculateInsuranceDto.ProductId);
+            var product = await this.productDataService.GetProductDetails(productInsuranceDto.ProductId);
             product.ProductType = await this.productDataService.GetProductTypeDetails(product.ProductTypeId);
 
+            this.logger.LogInformation($"Caclulating Insurance for Product {product.Name} of productId :{productInsuranceDto.ProductId}");
 
             return CalculateProductInsurance(product);
         }
 
-        public async Task<float> CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto)
+        public async Task<float> CalculateOrderInsurance(OrderInsuranceDto orderInsuranceDto)
         {
             float insuranceValue = 0;
             bool orderHasDigitalCamera = false;
 
-            foreach (var productId in calculateOrderInsuranceDto.ProductIds)
+            foreach (var productId in orderInsuranceDto.ProductIds)
             {
                 var product = await this.productDataService.GetProductDetails(productId);
                 product.ProductType = await this.productDataService.GetProductTypeDetails(product.ProductTypeId);
                 var productTypeSurcharge = this.surchargeService.GetSurchargeRate(product.ProductTypeId);
+
+                this.logger.LogInformation($"Caclulating Insurance for Product {product.Name} of productId :{productId}");
 
                 if (!orderHasDigitalCamera)
                 {
@@ -43,6 +49,7 @@ namespace Insurance.Api.Services
                 var productInsurance = CalculateProductInsurance(product);
                 if (productTypeSurcharge.IsSuccess)
                 {
+                    this.logger.LogInformation($"Adding surcharge rate : {productTypeSurcharge.SurchargeRate} for Product Type {product.ProductType} of producTypetId :{product.ProductTypeId}");
                     var surchargeValue = (productInsurance * productTypeSurcharge.SurchargeRate) / 100;
                     productInsurance += surchargeValue;
                 }
@@ -52,6 +59,7 @@ namespace Insurance.Api.Services
 
             if (orderHasDigitalCamera)
             {
+                this.logger.LogInformation("Adding 500 Euros to Insurance as Order has one or more Digital Cameras");
                 insuranceValue += 500;
             }
 
@@ -76,6 +84,10 @@ namespace Insurance.Api.Services
                 {
                     productInsurance += 500;
                 }
+            }
+            else
+            {
+                this.logger.LogInformation($"Not Adding Insurance for {product.Name} of productId :{product.ProductId} as product type cannot be insured");
             }
 
             return productInsurance;

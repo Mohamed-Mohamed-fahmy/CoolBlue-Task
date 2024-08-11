@@ -5,7 +5,7 @@ namespace Insurance.Api.Interfaces
 {
     public interface IInsuranceService
     {
-        Task<float> CalculateInsurance(CalculateInsuranceDto calculateInsuranceDto);
-        Task<float> CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto);
+        Task<float> CalculateInsurance(ProductInsuranceDto calculateInsuranceDto);
+        Task<float> CalculateOrderInsurance(OrderInsuranceDto calculateOrderInsuranceDto);
     }
 }
