@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Insurance.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/insurance")]
     [ApiController]
     public class InsuranceController : ControllerBase
     {
@@ -16,18 +16,18 @@ namespace Insurance.Api.Controllers
         }
 
         [HttpPost]
-        [Route("productInsurance")]
-        public async Task<IActionResult> CalculateProductInsurance([FromBody] CalculateInsuranceDto calculateInsuranceDto )
+        [Route("product")]
+        public async Task<IActionResult> CalculateProductInsurance([FromBody] ProductInsuranceDto calculateInsuranceDto )
         {
             var insuranceValue = await this.insuranceService.CalculateInsurance(calculateInsuranceDto);
             return Ok(new { InsuranceValue = insuranceValue });
         }
 
         [HttpPost]
-        [Route("orderInsurance")]
-        public async Task<IActionResult> CalculateOrderInsurance([FromBody] CalculateOrderInsuranceDto calculateOrderInsuranceDto)
+        [Route("order")]
+        public async Task<IActionResult> CalculateOrderInsurance([FromBody] OrderInsuranceDto OrderInsuranceDto)
         {
-            var insuranceValue = await this.insuranceService.CalculateOrderInsurance(calculateOrderInsuranceDto);
+            var insuranceValue = await this.insuranceService.CalculateOrderInsurance(OrderInsuranceDto);
             return Ok(new { InsuranceValue = insuranceValue });
         }
     }

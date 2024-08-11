@@ -29,7 +29,6 @@ namespace Insurance.Api.Services
 
             try
             {
-
                 var currentRate = this.appDbContext.ProductTypeSurcharges.FirstOrDefault(rate => rate.ProductTypeId == surchargeRateDto.ProductTypeId);
 
                 if (currentRate == null)
@@ -53,7 +52,16 @@ namespace Insurance.Api.Services
                 currentRate.SurchargeRate = surchargeRateDto.SurchargeRate;
                 currentRate.Version = Guid.NewGuid();
 
-                await this.appDbContext.SaveChangesAsync();
+                var result = await this.appDbContext.SaveChangesAsync();
+                if (result <= 0)
+                {
+                    this.logger.LogInformation($"Unable to update surcharge rate for ProductTypeId : {surchargeRateDto.ProductTypeId}");
+                    response.Error = "Error occured while updating entries";
+                    response.IsSuccess = false;
+
+                    return response;
+                }
+
                 this.logger.LogInformation($"Product type surcharge rate for ProductTypeId : {surchargeRateDto.ProductTypeId} is updated successfully");
 
                 response.Error = string.Empty;
@@ -63,6 +71,8 @@ namespace Insurance.Api.Services
             catch (DbUpdateConcurrencyException ex)
             {
                 this.logger.LogError($"Conflict detected while updating surcharge rate for ProductTypeId : {surchargeRateDto.ProductTypeId}");
+
+                //TODO Handle Concurrency Data Conflict
 
                 response.Error = "Concurrency conflict occurred.";
                 response.IsSuccess = false;

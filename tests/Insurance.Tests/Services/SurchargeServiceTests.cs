@@ -90,6 +90,77 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
+        public async void UpdateSurchargeRate_UpdatesFailure_ReturnsError()
+        {
+            var expectedErrorMsg = "Error occured while updating entries";
+
+            var rowVersion = Guid.NewGuid();
+            var surchargeRateDto = new SurchargeRateDto
+            {
+                ProductTypeId = 1,
+                SurchargeRate = 10,
+                Version = rowVersion
+            };
+
+            var productTypeSurcharge = new List<ProductTypeSurcharge>
+            {
+                new ProductTypeSurcharge
+                {
+                    Id = 1,
+                    ProductTypeId = 1,
+                    SurchargeRate = 20,
+                    Version = rowVersion
+                }
+            }.AsQueryable();
+
+            var setMock = this.Create<ProductTypeSurcharge>(productTypeSurcharge);
+
+            this.dbContextMock.Setup(c => c.ProductTypeSurcharges).Returns(setMock.Object);
+
+            this.dbContextMock.Setup(db => db.SaveChangesAsync(It.IsAny<System.Threading.CancellationToken>()))
+                          .ReturnsAsync(0);
+
+            var result = await this.serviceUnderTest.UpdateSurchargeRate(surchargeRateDto);
+
+            Assert.False(result.IsSuccess);
+            Assert.Equal(
+                expected: expectedErrorMsg,
+                actual: result.Error);
+        }
+
+        [Fact]
+        public async void UpdateSurchargeRate_DbUpdateConcurrencyException_ReturnsError()
+        {
+            var rowVersion = Guid.NewGuid();
+            var surchargeRateDto = new SurchargeRateDto
+            {
+                ProductTypeId = 1,
+                SurchargeRate = 10,
+                Version = rowVersion
+            };
+
+            var productTypeSurcharge = new List<ProductTypeSurcharge>
+            {
+                new ProductTypeSurcharge
+                {
+                    Id = 1,
+                    ProductTypeId = 1,
+                    SurchargeRate = 20,
+                    Version = rowVersion
+                }
+            }.AsQueryable();
+
+            var setMock = this.Create<ProductTypeSurcharge>(productTypeSurcharge);
+
+            this.dbContextMock.Setup(c => c.ProductTypeSurcharges).Returns(setMock.Object);
+
+            this.dbContextMock.Setup(db => db.SaveChangesAsync(It.IsAny<System.Threading.CancellationToken>()))
+                          .ThrowsAsync(new DbUpdateConcurrencyException());
+
+            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async()=> await this.serviceUnderTest.UpdateSurchargeRate(surchargeRateDto));
+        }
+
+        [Fact]
         public async void UpdateSurchargeRate_UpdatesSurchargeRateSuccessfully()
         {
             var rowVersion = Guid.NewGuid();

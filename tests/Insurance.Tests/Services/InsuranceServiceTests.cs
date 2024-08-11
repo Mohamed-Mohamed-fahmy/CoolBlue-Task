@@ -4,6 +4,8 @@ using Insurance.Api.Services;
 using Moq;
 using System.Collections.Generic;
 using Xunit;
+using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace Insurance.Tests.Services
 {
@@ -12,13 +14,15 @@ namespace Insurance.Tests.Services
         private readonly Mock<IProductDataService> productDataServiceMock;
         private readonly InsuranceService serviceUnderTest;
         private readonly Mock<ISurchargeService> surchargeServiceMock;
+        private readonly Mock<ILogger<InsuranceService>> loggerMock;
 
         public InsuranceServiceTests()
         {
             this.productDataServiceMock = new Mock<IProductDataService>();
             this.surchargeServiceMock = new Mock<ISurchargeService>();
+            this.loggerMock = new Mock<ILogger<InsuranceService>>();
 
-            this.serviceUnderTest = new InsuranceService(this.productDataServiceMock.Object, this.surchargeServiceMock.Object);
+            this.serviceUnderTest = new InsuranceService(this.productDataServiceMock.Object, this.surchargeServiceMock.Object, this.loggerMock.Object);
         }
 
         [Fact]
@@ -41,7 +45,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateInsuranceDto = new CalculateInsuranceDto
+            var productInsuranceDto = new ProductInsuranceDto
             {
                 ProductId = productDto.ProductId
             };
@@ -49,7 +53,7 @@ namespace Insurance.Tests.Services
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(It.IsAny<int>())).ReturnsAsync(productDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(It.IsAny<int>())).ReturnsAsync(productTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateInsurance(calculateInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateInsurance(productInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -77,7 +81,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateInsuranceDto = new CalculateInsuranceDto
+            var productInsuranceDto = new ProductInsuranceDto
             {
                 ProductId = productDto.ProductId
             };
@@ -85,7 +89,7 @@ namespace Insurance.Tests.Services
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(productDto.ProductId)).ReturnsAsync(productDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(productDto.ProductTypeId)).ReturnsAsync(productTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateInsurance(calculateInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateInsurance(productInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -113,7 +117,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateInsuranceDto = new CalculateInsuranceDto
+            var productInsuranceDto = new ProductInsuranceDto
             {
                 ProductId = productDto.ProductId
             };
@@ -121,7 +125,7 @@ namespace Insurance.Tests.Services
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(productDto.ProductId)).ReturnsAsync(productDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(productDto.ProductTypeId)).ReturnsAsync(productTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateInsurance(calculateInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateInsurance(productInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -149,7 +153,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateInsuranceDto = new CalculateInsuranceDto
+            var productInsuranceDto = new ProductInsuranceDto
             {
                 ProductId = productDto.ProductId
             };
@@ -157,7 +161,7 @@ namespace Insurance.Tests.Services
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(productDto.ProductId)).ReturnsAsync(productDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(productDto.ProductTypeId)).ReturnsAsync(productTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateInsurance(calculateInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateInsurance(productInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -185,7 +189,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            var orderInsuranceDto = new OrderInsuranceDto
             {
                 ProductIds = new List<int>
                 {
@@ -204,7 +208,7 @@ namespace Insurance.Tests.Services
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(productDto.ProductId)).ReturnsAsync(productDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(productDto.ProductTypeId)).ReturnsAsync(productTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateOrderInsurance(calculateOrderInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateOrderInsurance(orderInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -230,7 +234,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            var orderInsuranceDto = new OrderInsuranceDto
             {
                 ProductIds = new List<int>{
                     productDto.ProductId,
@@ -238,7 +242,7 @@ namespace Insurance.Tests.Services
                 }
             };
 
-            float expectedInsuranceValue = 1000 * calculateOrderInsuranceDto.ProductIds.Count;
+            float expectedInsuranceValue = 1000 * orderInsuranceDto.ProductIds.Count;
 
             var surchargeRateDto = new GetSurchargeRateDto
             {
@@ -250,7 +254,7 @@ namespace Insurance.Tests.Services
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(productDto.ProductId)).ReturnsAsync(productDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(productDto.ProductTypeId)).ReturnsAsync(productTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateOrderInsurance(calculateOrderInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateOrderInsurance(orderInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -290,7 +294,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            var orderInsuranceDto = new OrderInsuranceDto
             {
                 ProductIds = new List<int>{
                     productDto.ProductId,
@@ -299,7 +303,7 @@ namespace Insurance.Tests.Services
             };
 
             float digitalCameraInsuranceValue = 500;
-            float expectedInsuranceValue = (1000 * calculateOrderInsuranceDto.ProductIds.Count) + digitalCameraInsuranceValue;
+            float expectedInsuranceValue = (1000 * orderInsuranceDto.ProductIds.Count) + digitalCameraInsuranceValue;
 
             var surchargeRateDto = new GetSurchargeRateDto
             {
@@ -313,7 +317,7 @@ namespace Insurance.Tests.Services
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(secondProductDto.ProductId)).ReturnsAsync(secondProductDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(secondProductTypeDto.ProductTypeId)).ReturnsAsync(secondProductTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateOrderInsurance(calculateOrderInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateOrderInsurance(orderInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -364,7 +368,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            var orderInsuranceDto = new OrderInsuranceDto
             {
                 ProductIds = new List<int>
                 {
@@ -387,7 +391,7 @@ namespace Insurance.Tests.Services
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(digitalCameraProductTypeDto.ProductTypeId)).ReturnsAsync(digitalCameraProductTypeDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(thirdProductDto.ProductId)).ReturnsAsync(productDto);
 
-            var result = await this.serviceUnderTest.CalculateOrderInsurance(calculateOrderInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateOrderInsurance(orderInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -413,7 +417,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            var orderInsuranceDto = new OrderInsuranceDto
             {
                 ProductIds = new List<int>{
                     productDto.ProductId,
@@ -429,13 +433,13 @@ namespace Insurance.Tests.Services
             };
             var expectedSurchargeValue = (1000 * surchargeRateDto.SurchargeRate) / 100;
 
-            float expectedInsuranceValue = (1000 + expectedSurchargeValue) * calculateOrderInsuranceDto.ProductIds.Count;
+            float expectedInsuranceValue = (1000 + expectedSurchargeValue) * orderInsuranceDto.ProductIds.Count;
 
             this.surchargeServiceMock.Setup(surcharge => surcharge.GetSurchargeRate(productTypeDto.ProductTypeId)).Returns(surchargeRateDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(productDto.ProductId)).ReturnsAsync(productDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(productDto.ProductTypeId)).ReturnsAsync(productTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateOrderInsurance(calculateOrderInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateOrderInsurance(orderInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
@@ -461,7 +465,7 @@ namespace Insurance.Tests.Services
                 CanBeInsured = true
             };
 
-            var calculateOrderInsuranceDto = new CalculateOrderInsuranceDto
+            var orderInsuranceDto = new OrderInsuranceDto
             {
                 ProductIds = new List<int>{
                     productDto.ProductId,
@@ -475,18 +479,72 @@ namespace Insurance.Tests.Services
                 IsSuccess = false
             };
 
-            float expectedInsuranceValue = 1000 * calculateOrderInsuranceDto.ProductIds.Count;
+            float expectedInsuranceValue = 1000 * orderInsuranceDto.ProductIds.Count;
 
             this.surchargeServiceMock.Setup(surcharge => surcharge.GetSurchargeRate(productTypeDto.ProductTypeId)).Returns(surchargeRateDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductDetails(productDto.ProductId)).ReturnsAsync(productDto);
             this.productDataServiceMock.Setup(productData => productData.GetProductTypeDetails(productDto.ProductTypeId)).ReturnsAsync(productTypeDto);
 
-            var result = await this.serviceUnderTest.CalculateOrderInsurance(calculateOrderInsuranceDto);
+            var result = await this.serviceUnderTest.CalculateOrderInsurance(orderInsuranceDto);
 
             Assert.Equal(
                 expected: expectedInsuranceValue,
                 actual: result
             );
+        }
+
+        [Fact]
+        public void CalculateProductInsurance_GivenSalesPriceLessThan500AndProductTypeNotLaptopOrSmartphone_ShouldNotAddInsuranceCost()
+        {
+            const float expectedInsuranceValue = 0;
+
+            var productDto = new ProductDto
+            {
+                ProductId = 3,
+                Name = "Test Product 3",
+                ProductTypeId = 1,
+                SalesPrice = 250,
+                ProductType= new ProductTypeDto
+                {
+                    ProductTypeId = 1,
+                    Name = "Test type",
+                    CanBeInsured = true
+                }
+            };
+            MethodInfo methodInfo = typeof(InsuranceService).GetMethod("CalculateProductInsurance", BindingFlags.NonPublic | BindingFlags.Instance);
+            object[] parameters = { productDto };
+            var result = methodInfo.Invoke(this.serviceUnderTest, parameters);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result);
+        }
+
+        [Fact]
+        public void CalculateProductInsurance_GivenProductTypeNotInsured_ShouldNotAddInsuranceCost()
+        {
+            const float expectedInsuranceValue = 0;
+
+            var productDto = new ProductDto
+            {
+                ProductId = 3,
+                Name = "Test Product 3",
+                ProductTypeId = 1,
+                SalesPrice = 700,
+                ProductType = new ProductTypeDto
+                {
+                    ProductTypeId = 1,
+                    Name = "Test type",
+                    CanBeInsured = false
+                }
+            };
+            MethodInfo methodInfo = typeof(InsuranceService).GetMethod("CalculateProductInsurance", BindingFlags.NonPublic | BindingFlags.Instance);
+            object[] parameters = { productDto };
+            var result = methodInfo.Invoke(this.serviceUnderTest, parameters);
+
+            Assert.Equal(
+                expected: expectedInsuranceValue,
+                actual: result);
         }
     }
 }

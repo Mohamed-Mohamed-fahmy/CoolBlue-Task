@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Insurance.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/surcharge")]
     [ApiController]
     public class SurchargeController : ControllerBase
     {
@@ -17,7 +17,7 @@ namespace Insurance.Api.Controllers
         }
 
         [HttpPost]
-        [Route("updateSurchargeRate")]
+        [Route("update-rate")]
         public async Task<IActionResult> UpdateSurchargeRate([FromBody] SurchargeRateDto surchargeRateDto)
         {
             var response = await this.surchargeService.UpdateSurchargeRate(surchargeRateDto);
