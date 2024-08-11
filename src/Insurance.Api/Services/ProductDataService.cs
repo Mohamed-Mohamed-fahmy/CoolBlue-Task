@@ -1,16 +1,17 @@
 ﻿using Insurance.Api.Interfaces;
-using Insurance.Api.Models;
+using Insurance.Api.DTOs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Insurance.Api.Services
 {
     /// <summary>
     /// 
     /// </summary>
-    public class BusinessRulesService : IBusinessRulesService
+    public class ProductDataService : IProductDataService
     {
         /// <summary>
         /// 
@@ -20,23 +21,23 @@ namespace Insurance.Api.Services
         /// <summary>
         /// 
         /// </summary>
-        private readonly ILogger<IBusinessRulesService> logger;
+        private readonly ILogger<IProductDataService> logger;
 
-        public BusinessRulesService(IHttpClientFactory httpFactory, ILogger<IBusinessRulesService> logger)
+        public ProductDataService(IHttpClientFactory httpFactory, ILogger<IProductDataService> logger)
         {
             this.httpFactory = httpFactory;
             this.logger = logger;
         }
 
-        public ProductDto GetProductDetails(int productID)
+        public async Task<ProductDto> GetProductDetails(int productID)
         {
-            return GetResponse<ProductDto>($"/products/{productID}");
+            return await GetResponse<ProductDto>($"/products/{productID}");
         }
 
 
-        public ProductTypeDto GetProductTypeDetails(int productTypeID)
+        public async Task<ProductTypeDto> GetProductTypeDetails(int productTypeID)
         {
-            return GetResponse<ProductTypeDto>($"/product_types/{productTypeID}");
+            return await GetResponse<ProductTypeDto>($"/product_types/{productTypeID}");
         }
 
         /// <summary>
@@ -44,21 +45,22 @@ namespace Insurance.Api.Services
         /// </summary>
         /// <param name="requestUri"></param>
         /// <returns></returns>
-        private T GetResponse<T>(string requestUri) where T : class
+        private async Task<T> GetResponse<T>(string requestUri) where T : class
         {
             try
             {
                 var client = httpFactory.CreateClient("ProductClient");
 
-                var json = client.GetAsync(requestUri).Result.Content.ReadAsStringAsync().Result;
-                var response = JsonConvert.DeserializeObject<T>(json);
+                var json = await client.GetAsync(requestUri);
+                var content = await json.Content.ReadAsStringAsync();
+                var response = JsonConvert.DeserializeObject<T>(content);
 
                 return response;
             }
             catch (Exception ex)
             {
                 this.logger.LogError(ex.Message, ex);
-                return default(T);
+                throw;
             }
         }
     }

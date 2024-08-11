@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Insurance.Api.Models
+namespace Insurance.Api.DTOs
 {
     public class CalculateOrderInsuranceDto
     {

@@ -1,8 +1,11 @@
 using System;
+using Insurance.Api.Data;
 using Insurance.Api.Interfaces;
+using Insurance.Api.Middlewares;
 using Insurance.Api.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,6 +27,11 @@ namespace Insurance.Api
         {
             services.AddControllers();
 
+            services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddAutoMapper(typeof(Program));
+
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
@@ -36,19 +44,21 @@ namespace Insurance.Api
             {
                 config.AddDebug();
                 config.AddConsole();
-                //etc
             });
 
-            services.AddTransient<IBusinessRulesService, BusinessRulesService>();
+            services.AddTransient<IProductDataService, ProductDataService>();
             services.AddTransient<IInsuranceService, InsuranceService>();
+
+            services.AddScoped<ISurchargeService, SurchargeService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<GlobalExceptionHandler>();
+
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
@@ -56,8 +66,6 @@ namespace Insurance.Api
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

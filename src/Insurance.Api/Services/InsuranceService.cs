@@ -1,42 +1,53 @@
 ﻿using Insurance.Api.Interfaces;
-using Insurance.Api.Models;
+using Insurance.Api.DTOs;
+using System.Threading.Tasks;
 
 namespace Insurance.Api.Services
 {
     public class InsuranceService : IInsuranceService
     {
-        private readonly IBusinessRulesService businessRulesService;
+        private readonly IProductDataService productDataService;
+        private readonly ISurchargeService surchargeService;
 
-        public InsuranceService(IBusinessRulesService businessRulesService)
+        public InsuranceService(IProductDataService productDataService, ISurchargeService surchargeService)
         {
-            this.businessRulesService = businessRulesService;
+            this.productDataService = productDataService;
+            this.surchargeService = surchargeService;
         }
 
-        public float CalculateInsurance(CalculateInsuranceDto calculateInsuranceDto)
+        public async Task<float> CalculateInsurance(CalculateInsuranceDto calculateInsuranceDto)
         {
-            var product = this.businessRulesService.GetProductDetails(calculateInsuranceDto.ProductId);
-            product.ProductType = this.businessRulesService.GetProductTypeDetails(product.ProductTypeId);
+            var product = await this.productDataService.GetProductDetails(calculateInsuranceDto.ProductId);
+            product.ProductType = await this.productDataService.GetProductTypeDetails(product.ProductTypeId);
 
 
             return CalculateProductInsurance(product);
         }
 
-        public float CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto)
+        public async Task<float> CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto)
         {
             float insuranceValue = 0;
             bool orderHasDigitalCamera = false;
 
             foreach (var productId in calculateOrderInsuranceDto.ProductIds)
             {
-                var product = this.businessRulesService.GetProductDetails(productId);
-                product.ProductType = this.businessRulesService.GetProductTypeDetails(product.ProductTypeId);
+                var product = await this.productDataService.GetProductDetails(productId);
+                product.ProductType = await this.productDataService.GetProductTypeDetails(product.ProductTypeId);
+                var productTypeSurcharge = this.surchargeService.GetSurchargeRate(product.ProductTypeId);
 
                 if (!orderHasDigitalCamera)
                 {
                     orderHasDigitalCamera = product.ProductType.Name.Equals("Digital cameras", System.StringComparison.OrdinalIgnoreCase);
                 }
 
-                insuranceValue += CalculateProductInsurance(product);
+                var productInsurance = CalculateProductInsurance(product);
+                if (productTypeSurcharge.IsSuccess)
+                {
+                    var surchargeValue = (productInsurance * productTypeSurcharge.SurchargeRate) / 100;
+                    productInsurance += surchargeValue;
+                }
+
+                insuranceValue += productInsurance;
             }
 
             if (orderHasDigitalCamera)
