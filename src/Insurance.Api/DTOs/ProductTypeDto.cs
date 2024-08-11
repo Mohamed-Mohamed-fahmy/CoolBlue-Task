@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Insurance.Api.Models
+namespace Insurance.Api.DTOs
 {
     public class ProductTypeDto
     {

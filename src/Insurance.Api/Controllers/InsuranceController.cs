@@ -1,6 +1,7 @@
 ﻿using Insurance.Api.Interfaces;
-using Insurance.Api.Models;
+using Insurance.Api.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Insurance.Api.Controllers
 {
@@ -16,17 +17,17 @@ namespace Insurance.Api.Controllers
 
         [HttpPost]
         [Route("productInsurance")]
-        public IActionResult CalculateProductInsurance([FromBody] CalculateInsuranceDto calculateInsuranceDto )
+        public async Task<IActionResult> CalculateProductInsurance([FromBody] CalculateInsuranceDto calculateInsuranceDto )
         {
-            var insuranceValue = this.insuranceService.CalculateInsurance(calculateInsuranceDto);
+            var insuranceValue = await this.insuranceService.CalculateInsurance(calculateInsuranceDto);
             return Ok(new { InsuranceValue = insuranceValue });
         }
 
         [HttpPost]
         [Route("orderInsurance")]
-        public IActionResult CalculateOrderInsurance([FromBody] CalculateOrderInsuranceDto calculateOrderInsuranceDto)
+        public async Task<IActionResult> CalculateOrderInsurance([FromBody] CalculateOrderInsuranceDto calculateOrderInsuranceDto)
         {
-            var insuranceValue = this.insuranceService.CalculateOrderInsurance(calculateOrderInsuranceDto);
+            var insuranceValue = await this.insuranceService.CalculateOrderInsurance(calculateOrderInsuranceDto);
             return Ok(new { InsuranceValue = insuranceValue });
         }
     }

@@ -1,10 +1,11 @@
-﻿using Insurance.Api.Models;
+﻿using Insurance.Api.DTOs;
+using System.Threading.Tasks;
 
 namespace Insurance.Api.Interfaces
 {
     public interface IInsuranceService
     {
-        float CalculateInsurance(CalculateInsuranceDto calculateInsuranceDto);
-        float CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto);
+        Task<float> CalculateInsurance(CalculateInsuranceDto calculateInsuranceDto);
+        Task<float> CalculateOrderInsurance(CalculateOrderInsuranceDto calculateOrderInsuranceDto);
     }
 }
