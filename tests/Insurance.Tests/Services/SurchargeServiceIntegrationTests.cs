@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Insurance.Tests.Services
@@ -66,7 +67,7 @@ namespace Insurance.Tests.Services
             {
                 appDbContext.Database.EnsureDeleted();
 
-                var expectedErrorMsg = string.Empty;
+                var expectedErrorMsg = "Surcharge rate not found";
 
                 this.serviceUnderTest = new SurchargeService(appDbContext, this.loggerMock.Object, this.mapper);
 
@@ -77,7 +78,7 @@ namespace Insurance.Tests.Services
                 Assert.False(result.IsSuccess);
 
                 Assert.Equal(
-                    expected: "Surcharge rate not found",
+                    expected: expectedErrorMsg,
                     actual: result.Error);
             }
         }
@@ -105,6 +106,52 @@ namespace Insurance.Tests.Services
                 Assert.Equal(
                     expected: string.Empty,
                     actual: result.Error);
+            }
+        }
+
+        [Fact]
+        public void GetSurchargeRate_SurchargeRateNotFound_ReturnsError()
+        {
+            using (var appDbContext = new AppDbContext(this.dbContextOptions))
+            {
+                appDbContext.Database.EnsureDeleted();
+
+                var expectedErrorMsg = "Surcharge rate not found";
+
+                this.serviceUnderTest = new SurchargeService(appDbContext, this.loggerMock.Object, this.mapper);
+
+                var result = this.serviceUnderTest.GetSurchargeRate(1);
+
+                Assert.False(result.IsSuccess);
+                Assert.Equal(
+                    expected: expectedErrorMsg,
+                    actual: result.Error);
+            }
+        }
+
+        [Fact]
+        public async void GetSurchargeRate_SurchargeRate_ReturnsSurchargeRateSuccessfully()
+        {
+            using (var appDbContext = new AppDbContext(this.dbContextOptions))
+            {
+                appDbContext.Database.EnsureDeleted();
+
+                var rowVersion = Guid.NewGuid();
+                var existingRate = new ProductTypeSurcharge { Id = 1, ProductTypeId = 1, SurchargeRate = 20, Version = rowVersion };
+                appDbContext.ProductTypeSurcharges.Add(existingRate);
+                await appDbContext.SaveChangesAsync();
+
+                this.serviceUnderTest = new SurchargeService(appDbContext, this.loggerMock.Object, this.mapper);
+
+                var result =  this.serviceUnderTest.GetSurchargeRate(1);
+
+                Assert.True(result.IsSuccess);
+                Assert.Equal(
+                expected: existingRate.SurchargeRate,
+                actual: result.SurchargeRate);
+                Assert.Equal(
+                    expected: existingRate.ProductTypeId,
+                    actual: result.ProductTypeId);
             }
         }
     }

@@ -30,7 +30,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void UpdateSurchargeRate_ProductTypeNotFound_ReturnsError()
+        public async void UpdateSurchargeRate_SurchargeRateNotFound_ReturnsError()
         {
             var expectedErrorMsg = "Surcharge rate not found";
 
@@ -90,7 +90,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void UpdateSurchargeRate_SurchargeRate_UpdatesSurchargeRateSuccessfully()
+        public async void UpdateSurchargeRate_UpdatesSurchargeRateSuccessfully()
         {
             var rowVersion = Guid.NewGuid();
             var surchargeRateDto = new SurchargeRateDto
@@ -121,6 +121,66 @@ namespace Insurance.Tests.Services
             var result = await this.serviceUnderTest.UpdateSurchargeRate(surchargeRateDto);
 
             Assert.True(result.IsSuccess);
+        }
+
+        [Fact]
+        public void GetSurchargeRate_SurchargeRateNotFound_ReturnsError()
+        {
+            var expectedErrorMsg = "Surcharge rate not found";
+
+            var surchargeRateDto = new SurchargeRateDto
+            {
+                ProductTypeId = 1,
+                SurchargeRate = 10,
+                Version = Guid.NewGuid()
+            };
+
+            var surchargeRate = new List<ProductTypeSurcharge>().AsQueryable();
+            var setMock = this.Create<ProductTypeSurcharge>(surchargeRate);
+
+            this.dbContextMock.Setup(c => c.ProductTypeSurcharges).Returns(setMock.Object);
+
+            var result = this.serviceUnderTest.GetSurchargeRate(1);
+
+            Assert.False(result.IsSuccess);
+            Assert.Equal(
+                expected: expectedErrorMsg,
+                actual: result.Error);
+        }
+
+        [Fact]
+        public void GetSurchargeRate_SurchargeRate_ReturnsSurchargeRateSuccessfully()
+        {
+            var surchargeRateDto = new GetSurchargeRateDto
+            {
+                ProductTypeId = 1,
+                SurchargeRate = 10,
+            };
+
+            var productTypeSurcharge = new List<ProductTypeSurcharge>
+            {
+                new ProductTypeSurcharge
+                {
+                    Id = 1,
+                    ProductTypeId = 1,
+                    SurchargeRate = 10,
+                }
+            }.AsQueryable();
+
+            var setMock = this.Create<ProductTypeSurcharge>(productTypeSurcharge);
+
+            this.dbContextMock.Setup(c => c.ProductTypeSurcharges).Returns(setMock.Object);
+            this.mapperMock.Setup(mapper => mapper.Map<GetSurchargeRateDto>(It.IsAny<ProductTypeSurcharge>())).Returns(surchargeRateDto);
+
+            var result = this.serviceUnderTest.GetSurchargeRate(1);
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal(
+                expected: surchargeRateDto.SurchargeRate,
+                actual: result.SurchargeRate);
+            Assert.Equal(
+                expected: surchargeRateDto.ProductTypeId,
+                actual: result.ProductTypeId);
         }
 
         private Mock<DbSet<T>> Create<T>(IEnumerable<T> data) where T : class

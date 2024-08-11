@@ -79,8 +79,8 @@ namespace Insurance.Api.Services
 
             if (currentRate == null)
             {
-                this.logger.LogWarning($"Product type for ProductTypeId : {productTypeId} is not found");
-                response.Error = string.Empty;
+                this.logger.LogWarning($"Surcharge rate for ProductTypeId : {productTypeId} is not found");
+                response.Error = "Surcharge rate not found";
                 response.IsSuccess = false;
 
                 return response;
