@@ -26,7 +26,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateInsurance_GivenSalesPriceLessThan500AndProductTypeLaptop_ShouldAddFiveHundredEurosToInsuranceCost()
+        public async void CalculateInsurance_LowPriceLaptop_Adds500EurosToCost()
         {
             const float expectedInsuranceValue = 500;
 
@@ -62,7 +62,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateInsurance_GivenSalesPriceLessThan500AndProductTypeNotLaptopOrSmartphone_ShouldNotAddInsuranceCost()
+        public async void CalculateInsurance_LowPriceNonLaptopOrSmartphone_ShouldNotAddCost()
         {
             const float expectedInsuranceValue = 0;
 
@@ -98,7 +98,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateInsurance_GivenSalesPriceBetween500And2000Euros_ShouldAddThousandEurosToInsuranceCost()
+        public async void CalculateInsurance_MidRangeProduct_Adds1000EurosToCost()
         {
             const float expectedInsuranceValue = 1000;
 
@@ -134,7 +134,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateInsurance_GivenSalesPriceMoreThanOrEqual2000Euros_ShouldAddTwoThousandEurosToInsuranceCost()
+        public async void CalculateInsurance_HighPriceProduct_Adds2000EurosToCost()
         {
             const float expectedInsuranceValue = 2000;
 
@@ -170,7 +170,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateOrderInsurance_GivenTwoProductsWithSalesPriceLessThan500AndProductTypeNotLaptopOrSmartphone_ShouldNotAddInsuranceCost()
+        public async void CalculateOrderInsurance_TwoLowPriceNonLaptopOrSmartphone_ShouldNotAddCost()
         {
             const float expectedInsuranceValue = 0;
 
@@ -217,7 +217,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateOrderInsurance_GivenTwoProductsWithSalesPriceBetween500And2000Euros_ShouldAddTwoThousandEurosToInsuranceCost()
+        public async void CalculateOrderInsurance_TwoMidRangeProducts_Adds2000EurosToCost()
         {
             var productDto = new ProductDto
             {
@@ -263,7 +263,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateOrderInsurance_GivenTwoProductsWithSalesPriceBetween500And2000EurosAndOneWithProductTypeDigitalCamera_ShouldAddTwoThousandAndFiveHundredEurosToInsuranceCost()
+        public async void CalculateOrderInsurance_TwoMidRangeProductsAndDigitalCamera_Adds2500EurosToCost()
         {
             var productDto = new ProductDto
             {
@@ -326,7 +326,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateOrderInsurance_GivenThreeProductsWithSalesPriceLessThan500AndTwoWithProductTypeDigitalCamera_ShoulAddOnlyFiveHundredEurosToInsuranceCost()
+        public async void CalculateOrderInsurance_ThreeLowPriceProductsAndTwoDigitalCameras_Adds500EurosToCost()
         {
             const float expectedInsuranceValue = 500;
 
@@ -400,7 +400,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateOrderInsurance_GivenTwoProductsWithSalesPriceBetween500And2000EurosAndSurchargeRateTenPercent_ShouldAddTwoThousandAndTwoHundredEurosToInsuranceCost()
+        public async void CalculateOrderInsurance_TwoMidRangeProductsWith10PercentSurcharge_Adds2200EurosToCost()
         {
             var productDto = new ProductDto
             {
@@ -448,7 +448,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public async void CalculateOrderInsurance_GivenTwoProductsWithSalesPriceBetween500And2000EurosAndNoSurchargeRate_ShouldAddTwoThousandEurosToInsuranceCost()
+        public async void CalculateOrderInsurance_TwoMidRangeProducts_NoSurcharge_Adds2000EurosToCost()
         {
             var productDto = new ProductDto
             {
@@ -494,7 +494,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public void CalculateProductInsurance_GivenSalesPriceLessThan500AndProductTypeNotLaptopOrSmartphone_ShouldNotAddInsuranceCost()
+        public void CalculateProductInsurance_LowPriceNonLaptopOrSmartphone_NoInsuranceCost()
         {
             const float expectedInsuranceValue = 0;
 
@@ -521,7 +521,7 @@ namespace Insurance.Tests.Services
         }
 
         [Fact]
-        public void CalculateProductInsurance_GivenProductTypeNotInsured_ShouldNotAddInsuranceCost()
+        public void CalculateProductInsurance_UninsuredProduct_NoInsuranceCost()
         {
             const float expectedInsuranceValue = 0;
 
