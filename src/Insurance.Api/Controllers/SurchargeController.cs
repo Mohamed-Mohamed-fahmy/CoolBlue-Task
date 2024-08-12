@@ -28,7 +28,6 @@ namespace Insurance.Api.Controllers
             }
 
             return BadRequest(response);
-
         }
     }
 }
